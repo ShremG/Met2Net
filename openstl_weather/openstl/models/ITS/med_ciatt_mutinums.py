@@ -12,15 +12,9 @@ from openstl.modules import (ConvSC, ConvNeXtSubBlock, ConvMixerSubBlock, GASubB
                              HorNetSubBlock, MLPMixerSubBlock, MogaSubBlock, PoolFormerSubBlock,
                              SwinSubBlock, UniformerSubBlock, VANSubBlock, ViTSubBlock, TAUSubBlock)
 from openstl.models.simvp_ema.ciatt_modules import CIMidNet
-# from openstl.models.ITS.module.ciatt_supertoken import CIMidNet
+
 
 class SimVP_Model(nn.Module):
-    r"""SimVP Model
-
-    Implementation of `SimVP: Simpler yet Better Video Prediction
-    <https://arxiv.org/abs/2206.05099>`_.
-
-    """
 
     def __init__(self, in_shape, hid_S=16, hid_T=256, N_S=4, N_T=4, model_type='gSTA',
                  mlp_ratio=8., drop=0.0, drop_path=0.0, spatio_kernel_enc=3,
@@ -31,51 +25,12 @@ class SimVP_Model(nn.Module):
         T, C, H, W = in_shape  # T is pre_seq_length
         H, W = int(H / 2**(N_S/2)), int(W / 2**(N_S/2))  # downsample 1 / 2**(N_S/2)
         act_inplace = False
-        # self.gs_blur = transforms.GaussianBlur(kernel_size=5,sigma=(0.5, 1.5))
 
         self.enc_q_list = nn.ModuleList([Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace) for _ in range(C)])
         self.enc_k_list = nn.ModuleList([Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace) for _ in range(C)])
 
         self.dec_q_list = nn.ModuleList([Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace) for _ in range(C)])
         self.dec_k_list = nn.ModuleList([Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace) for _ in range(C)])
-
-        # self.enc_u10_q = Encoder(2, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-        # self.enc_u10_k = Encoder(2, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-
-        # self.enc_v10_q = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-        # self.enc_v10_k = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-
-        # self.enc_t2m_q = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-        # self.enc_t2m_k = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-
-        # self.enc_tcc_q = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-        # self.enc_tcc_k = Encoder(1, hid_S, N_S, spatio_kernel_enc, act_inplace=act_inplace)
-
-        # self.dec_u10_q = Decoder(hid_S, 2, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-        # self.dec_u10_k = Decoder(hid_S, 2, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-
-        # self.dec_v10_q = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-        # self.dec_v10_k = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-
-        # self.dec_t2m_q = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-        # self.dec_t2m_k = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-
-        # self.dec_tcc_q = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-        # self.dec_tcc_k = Decoder(hid_S, 1, N_S, spatio_kernel_dec, act_inplace=act_inplace)
-
-        
-
-        # model_type = 'gsta' if model_type is None else model_type.lower()
-        # if model_type == 'incepu':
-        #     self.hid_q = MidIncepNet(T*hid_S*C, hid_T, N_T)
-        #     self.hid_k = MidIncepNet(T*hid_S*C, hid_T, N_T)
-        # else:
-        #     self.hid_q = MidMetaNet(T*hid_S*C, hid_T, N_T,
-        #         input_resolution=(H, W), model_type=model_type,
-        #         mlp_ratio=mlp_ratio, drop=drop, drop_path=drop_path)
-        #     self.hid_k = MidMetaNet(T*hid_S*C, hid_T, N_T,
-        #         input_resolution=(H, W), model_type=model_type,
-        #         mlp_ratio=mlp_ratio, drop=drop, drop_path=drop_path)
 
         self.hid_q = CIMidNet(in_channels=T*hid_S,d_model=hid_T, n_layers=N_T, heads=8)
         self.hid_k = CIMidNet(in_channels=T*hid_S,d_model=hid_T, n_layers=N_T, heads=8)
@@ -84,45 +39,6 @@ class SimVP_Model(nn.Module):
     def init_weights(self):
         """Initialize the weights of model.
         """
-        # for param_q, param_k in zip(self.enc_u10_q.parameters(),
-        #                             self.enc_u10_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.enc_v10_q.parameters(),
-        #                             self.enc_v10_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.enc_t2m_q.parameters(),
-        #                             self.enc_t2m_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.enc_tcc_q.parameters(),
-        #                             self.enc_tcc_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-
-        # for param_q, param_k in zip(self.dec_u10_q.parameters(),
-        #                             self.dec_u10_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.dec_v10_q.parameters(),
-        #                             self.dec_v10_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.dec_t2m_q.parameters(),
-        #                             self.dec_t2m_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
-        
-        # for param_q, param_k in zip(self.dec_tcc_q.parameters(),
-        #                             self.dec_tcc_k.parameters()):
-        #     param_k.requires_grad = False
-        #     param_k.data.copy_(param_q.data)
 
         for enc_q, enc_k in zip(self.enc_q_list,self.enc_k_list):
             for param_q, param_k in zip(enc_q.parameters(),
@@ -151,29 +67,6 @@ class SimVP_Model(nn.Module):
                 param_k.requires_grad = False
                 param_k.data.copy_(param_q.data)
 
-        # for param_q, param_k in zip(self.enc_u10_q.parameters(),
-        #                             self.enc_u10_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.enc_v10_q.parameters(),
-        #                             self.enc_v10_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.enc_t2m_q.parameters(),
-        #                             self.enc_t2m_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.enc_tcc_q.parameters(),
-        #                             self.enc_tcc_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
     
     def _momentum_update_key_decoder(self):
         """Momentum update of the key decoder."""
@@ -182,30 +75,6 @@ class SimVP_Model(nn.Module):
                                         dec_k.parameters()):
                 param_k.requires_grad = False
                 param_k.data.copy_(param_q.data)
-
-        # for param_q, param_k in zip(self.dec_u10_q.parameters(),
-        #                             self.dec_u10_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.dec_v10_q.parameters(),
-        #                             self.dec_v10_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.dec_t2m_q.parameters(),
-        #                             self.dec_t2m_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                    param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
-        
-        # for param_q, param_k in zip(self.dec_tcc_q.parameters(),
-        #                             self.dec_tcc_k.parameters()):
-        #     param_k.data = param_k.data * self.momentum + \
-        #                   param_q.data * (1. - self.momentum)
-        #     # param_k.requires_grad = False
     
     def _momentum_update_key_translator(self):
         """Momentum update of the key translator."""
@@ -229,11 +98,7 @@ class SimVP_Model(nn.Module):
         for i in range(C):
             hh, _ = self.enc_q_list[i](x[:,i:i+1,:,:])
             h_s1.append(hh)
-        # h_u10, _ = self.enc_u10_q(x[:,0:2,:,:])
-        # h_v10, _ = self.enc_v10_q(x[:,2:3,:,:])
-        # h_t2m, _ = self.enc_t2m_q(x[:,3:4,:,:])
-        # h_tcc, _ = self.enc_tcc_q(x[:,4:5,:,:])
-        # H_, W_ = h_tcc.shape[-2],h_tcc.shape[-1]
+
         H_, W_ = h_s1[-1].shape[-2],h_s1[-1].shape[-1]
 
         z_x = torch.stack(h_s1, dim=1) # b*t,n,c,h,w
@@ -241,16 +106,7 @@ class SimVP_Model(nn.Module):
         self.hid_k.train()
         z_y_pre = self.hid_k(z_x)
         z_y_pre = z_y_pre.reshape(B,C,T,-1,H_, W_).permute(0,2,1,3,4,5).reshape(B*T,C,-1,H_, W_)
-        # h_pre_u10 = z_y_pre[:,0,:,:]
-        # h_pre_v10 = z_y_pre[:,1,:,:]
-        # h_pre_t2m = z_y_pre[:,2,:,:]
-        # h_pre_tcc = z_y_pre[:,3,:,:]
 
-        # # 3D DEC
-        # rec_u10 = self.dec_u10_q(h_pre_u10)
-        # rec_v10 = self.dec_v10_q(h_pre_v10)
-        # rec_t2m = self.dec_t2m_q(h_pre_t2m)
-        # rec_tcc = self.dec_tcc_q(h_pre_tcc)
         rec_list = []
         for i in range(C):
             rec = self.dec_q_list[i](z_y_pre[:,i,:,:])
@@ -263,11 +119,7 @@ class SimVP_Model(nn.Module):
         # 二阶段
         self._momentum_update_key_encoder()
         self._momentum_update_key_decoder()
-        # h_u10, _ = self.enc_u10_k(x[:,0:2,:,:])
-        # h_v10, _ = self.enc_v10_k(x[:,2:3,:,:])
-        # h_t2m, _ = self.enc_t2m_k(x[:,3:4,:,:])
-        # h_tcc, _ = self.enc_tcc_k(x[:,4:5,:,:])
-        # H_, W_ = h_tcc.shape[-2],h_tcc.shape[-1]
+
 
         h_s2 = []
         for i in range(C):
@@ -278,40 +130,18 @@ class SimVP_Model(nn.Module):
         self.hid_k.train()
         z_y_pre = self.hid_q(z_x)
         z_y_pre = z_y_pre.reshape(B,C,T,-1,H_, W_).permute(0,2,1,3,4,5).reshape(B*T,C,-1,H_, W_)
-        # z_x = torch.cat((h_u10, h_v10, h_t2m, h_tcc), dim=1)
-        # z_x = z_x.reshape(B,T,-1,H_,W_)
-        # z_y_pre = self.hid_q(z_x).reshape(B*T,-1,H_,W_)
 
-        # h_pre_u10 = z_y_pre[:,0,:,:]
-        # h_pre_v10 = z_y_pre[:,1,:,:]
-        # h_pre_t2m = z_y_pre[:,2,:,:]
-        # h_pre_tcc = z_y_pre[:,3,:,:]
 
         h_y = []
         for i in range(C):
             hh, _ = self.enc_k_list[i](y[:,i:i+1,:,:])
             h_y.append(hh)
-        # h_y_u10, _ = self.enc_u10_k(y[:,0:2,:,:])
-        # h_y_v10, _ = self.enc_v10_k(y[:,2:3,:,:])
-        # h_y_t2m, _ = self.enc_t2m_k(y[:,3:4,:,:])
-        # h_y_tcc, _ = self.enc_tcc_k(y[:,4:5,:,:])
+
         z_y = torch.stack(h_y, dim=1) # b*t,4,c,h,w
         loss_latent = F.mse_loss(z_y_pre,z_y)
-        # loss_latent = F.l1_loss(z_y_pre,z_y)
-        # loss_latent = F.smooth_l1_loss(z_y_pre,z_y)
+
         self._momentum_update_key_translator()
 
-        # pre_u10 = self.dec_u10_k(h_pre_u10)
-        # pre_v10 = self.dec_v10_k(h_pre_v10)
-        # pre_t2m = self.dec_t2m_k(h_pre_t2m)
-        # pre_tcc = self.dec_tcc_k(h_pre_tcc)
-        # pre_y = torch.cat((pre_u10, pre_v10, pre_t2m, pre_tcc), dim=1)
-        # pre_y = pre_y.reshape(B,T,C,H,W)
-        # 3D DEC
-        # pre_u10 = self.dec_u10_k(h_pre_u10)
-        # pre_v10 = self.dec_v10_k(h_pre_v10)
-        # pre_t2m = self.dec_t2m_k(h_pre_t2m)
-        # pre_tcc = self.dec_tcc_k(h_pre_tcc)
         pre_y_list = []
         for i in range(C):
             rec = self.dec_k_list[i](z_y_pre[:,i,:,:])
@@ -329,11 +159,7 @@ class SimVP_Model(nn.Module):
         B, T, C, H, W = batch_x.shape
         x = batch_x.clone()
         x = x.view(B*T, C, H, W)
-        # h_u10, _ = self.enc_u10_q(x[:,0:2,:,:])
-        # h_v10, _ = self.enc_v10_q(x[:,2:3,:,:])
-        # h_t2m, _ = self.enc_t2m_q(x[:,3:4,:,:])
-        # h_tcc, _ = self.enc_tcc_q(x[:,4:5,:,:])
-        # H_, W_ = h_tcc.shape[-2],h_tcc.shape[-1]
+
         h_s1 = []
         for i in range(C):
             hh, _ = self.enc_q_list[i](x[:,i:i+1,:,:])
@@ -344,16 +170,7 @@ class SimVP_Model(nn.Module):
 
         z_y_pre = self.hid_q(z_x)
         z_y_pre = z_y_pre.reshape(B,C,T,-1,H_, W_).permute(0,2,1,3,4,5).reshape(B*T,C,-1,H_, W_)
-        # h_pre_u10 = z_y_pre[:,0,:,:]
-        # h_pre_v10 = z_y_pre[:,1,:,:]
-        # h_pre_t2m = z_y_pre[:,2,:,:]
-        # h_pre_tcc = z_y_pre[:,3,:,:]
 
-        # # 3D DEC
-        # rec_u10 = self.dec_u10_q(h_pre_u10)
-        # rec_v10 = self.dec_v10_q(h_pre_v10)
-        # rec_t2m = self.dec_t2m_q(h_pre_t2m)
-        # rec_tcc = self.dec_tcc_q(h_pre_tcc)
         pre_y_list = []
         for i in range(C):
             rec = self.dec_q_list[i](z_y_pre[:,i,:,:])
