@@ -22,7 +22,7 @@ This approach effectively separates feature learning from interaction modeling, 
 
 ---
 
-## 📊 Benchmarks
+<!-- ## 📊 Benchmarks
 
 Met2Net is evaluated on standard weather forecasting datasets including ERA5 and WeatherBench, covering multi-variable 3D gridded fields over time.
 
@@ -33,7 +33,7 @@ Met2Net is evaluated on standard weather forecasting datasets including ERA5 and
 
 > 📌 For detailed training and evaluation settings, please refer to [`configs/`](configs/)
 
----
+--- -->
 
 ## 🚀 Getting Started
 
