@@ -11,7 +11,7 @@
 ## 🆕 Updates
 
 - **[June 26, 2025]** 🎉 Met2Net accepted to **ICCV 2025**! Paper available on arXiv: [2507.17189](https://arxiv.org/pdf/2507.17189)
----
+<!-- ---
 ## 🌐 Overview
 
 **Met2Net** is a representation-decoupled spatio-temporal forecasting framework tailored for complex meteorological systems. It introduces a **two-stage pipeline**:
@@ -19,7 +19,7 @@
 - **Stage 1:** Learn variable-specific representations using independent encoder-decoder pairs.
 - **Stage 2:** Enable cross-variable translation via a lightweight Transformer-based Translator to model interactions.
 
-This approach effectively separates feature learning from interaction modeling, improving both accuracy and generalization.
+This approach effectively separates feature learning from interaction modeling, improving both accuracy and generalization. -->
 
 ---
 
