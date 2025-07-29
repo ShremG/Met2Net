@@ -3,6 +3,7 @@
 🏆 **ICCV 2025 Accepted Paper**  · 🛰️ Spatio-Temporal Forecasting · ⏳ Two-Stage Learning
 
 [![arXiv](https://img.shields.io/badge/arXiv-2507.17189-b31b1b.svg)](https://arxiv.org/pdf/2507.17189)
+[![HF Daily Paper](https://img.shields.io/badge/HuggingFace-DailyPaper-yellow)](https://huggingface.co/papers/2507.17189)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/ShremG/Met2Net?style=social)](https://github.com/ShremG/Met2Net/stargazers)
 
