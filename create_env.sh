@@ -1,8 +1,8 @@
-# conda create -n openstl python=3.10.8
-# conda activate openstl
-# conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia
-# conda install lightning
-# conda install xarray==0.19.0
+conda create -n openstl python=3.10.8
+conda activate openstl
+conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia
+conda install lightning
+conda install xarray==0.19.0
 pip install hickle
 pip install decord
 pip install fvcore
