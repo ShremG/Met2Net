@@ -19,7 +19,7 @@ We release both the processed datasets and pretrained model weights on Hugging F
 | Dataset Name     | Variables                | Shape (C×H×W) | Seq (Input→Output) | Samples (Train/Test) | Dataset Repo | Model Repo |
 |------------------|--------------------------|----------------|--------------------|-----------------------|--------------|------------|
 | **ERA5-Cropped** | T2M, U10, V10, MSL       | 4×128×128      | 12 → 12            | 43,801 / 8,737        | [📂 HF Dataset](https://huggingface.co/datasets/guaishou1/Met2Net) | [🧠 HF Model](https://huggingface.co/guaishou1/Met2Net) |
-| **MvMm-FNIST**   | 3 synthetic channels     | 3×64×64        | 10 → 10            | 10,000 / 10,000       | [📂 HF Dataset](https://huggingface.co/datasets/guaishou1/Met2Net)     | [🧠 HF Model](https://huggingface.co/guaishou1/Met2Net) |
+| **MvMmfnist**   | 3 synthetic channels     | 3×64×64        | 10 → 10            | 10,000 / 10,000       | [📂 HF Dataset](https://huggingface.co/datasets/guaishou1/Met2Net)     | [🧠 HF Model](https://huggingface.co/guaishou1/Met2Net) |
 
 
 ---
