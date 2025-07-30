@@ -1,3 +1,5 @@
+import sys
+sys.path.append('/root/data/lsh/openstl_weather/')
 import cv2
 import gzip
 import numpy as np
@@ -44,10 +46,11 @@ def load_fixed_set(root, data_name='mnist'):
         'mnist': 'moving_mnist/mnist_test_seq.npy',
         'fmnist': 'moving_fmnist/fmnist_test_seq.npy',
         'mnist_cifar': 'moving_mnist/mnist_cifar_test_seq.npy',
+        'mv_mmnist':'moving_mnist/mnist_fmnist_mv_test_seq.npy',
     }
     path = os.path.join(root, file_map[data_name])
     dataset = np.load(path)
-    if 'cifar' not in data_name:
+    if 'cifar' not in data_name and 'mv' not in data_name:
         dataset = dataset[..., np.newaxis]
     return dataset
 
@@ -66,7 +69,7 @@ class MovingMNIST(Dataset):
         use_augment (bool): Whether to use augmentations (defaults to False).
     """
 
-    def __init__(self, root, is_train=True, data_name='mnist',
+    def __init__(self, root, is_train=True, data_name='mnist', 
                  n_frames_input=10, n_frames_output=10, image_size=64,
                  num_objects=[2], transform=None, use_augment=False):
         super(MovingMNIST, self).__init__()
@@ -74,16 +77,22 @@ class MovingMNIST(Dataset):
         self.dataset = None
         self.is_train = is_train
         self.data_name = data_name
+        self.is_mv = 'mv' in data_name
         if self.is_train:
-            self.mnist = load_mnist(root, data_name)
+            self.mnist = load_mnist(root, 'mnist')
             self.cifar = load_cifar(root, data_name)
+            self.fmnist = load_mnist(root, 'fmnist')
         else:
             if num_objects[0] != 2:
-                self.mnist = load_mnist(root, data_name)
+                self.mnist = load_mnist(root, 'mnist')
                 self.cifar = load_cifar(root, data_name)
+                self.fmnist = load_mnist(root, 'fmnist')
             else:
                 self.dataset = load_fixed_set(root, data_name)
-        self.length = int(1e4) if self.dataset is None else self.dataset.shape[1]
+        if self.is_mv:
+            self.length = int(1e4) if self.dataset is None else self.dataset.shape[0]
+        else:
+            self.length = int(1e4) if self.dataset is None else self.dataset.shape[1]
 
         self.num_objects = num_objects
         self.n_frames_input = n_frames_input
@@ -91,7 +100,7 @@ class MovingMNIST(Dataset):
         self.n_frames_total = self.n_frames_input + self.n_frames_output
         self.transform = transform
         self.use_augment = use_augment
-        self.background = 'cifar' in data_name
+        self.background = 'cifar' in data_name or 'mv' in data_name
         # For generating data
         self.image_size_ = image_size
         self.digit_size_ = 28
@@ -148,7 +157,12 @@ class MovingMNIST(Dataset):
         '''
         Get random trajectories for the digits and generate a video.
         '''
-        if not background:  # `black`
+        if self.is_mv:
+            data_1 = np.zeros((self.n_frames_total, self.image_size_, self.image_size_), dtype=np.float32)
+            data_2 = np.zeros((self.n_frames_total, self.image_size_, self.image_size_), dtype=np.float32)
+            data_3 = np.ones((self.n_frames_total, self.image_size_, self.image_size_), dtype=np.float32) * 255.0
+
+        elif not background:  # `black`
             data = np.zeros((self.n_frames_total, self.image_size_,
                             self.image_size_), dtype=np.float32)
         else:  # cifar-10 as the background
@@ -160,6 +174,14 @@ class MovingMNIST(Dataset):
             start_y, start_x = self.get_random_trajectory(self.n_frames_total)
             ind = random.randint(0, self.mnist.shape[0] - 1)
             digit_image = self.mnist[ind].copy()
+            if self.is_mv:
+                fmnist = self.fmnist[ind].copy()
+
+                bin_mnist = self.mnist[ind].copy()
+                bin_mnist[bin_mnist > 1] = 255
+                # 反转图像
+                bin_mnist = 255 - bin_mnist
+
             if background:  # binary {0, 255}
                 digit_image[digit_image > 1] = 255
             for i in range(self.n_frames_total):
@@ -168,13 +190,21 @@ class MovingMNIST(Dataset):
                 bottom = top + self.digit_size_
                 right = left + self.digit_size_
                 # Draw digit
-                if not background:
+                if self.is_mv:
+                    data_1[i, top:bottom, left:right] = np.maximum(data_1[i, top:bottom, left:right], digit_image) # channel 1
+                    data_2[i, top:bottom, left:right] = np.maximum(data_2[i, top:bottom, left:right], fmnist) # channel 2
+                    data_3[i, top:bottom, left:right] = np.minimum(data_3[i, top:bottom, left:right], bin_mnist) # channel 3
+                    data = np.stack((data_1, data_2, data_3), axis=-1)
+
+                elif not background:
                     data[i, top:bottom, left:right] = np.maximum(
                         data[i, top:bottom, left:right], digit_image)
+                    
                 else:
                     data[i, top:bottom, left:right, ...] = np.maximum(
                         data[i, top:bottom, left:right, ...], np.repeat(digit_image[..., np.newaxis], 3, axis=2))
-
+        if self.is_mv:
+            return data
         if not background:
             data = data[..., np.newaxis]
         return data
@@ -204,14 +234,18 @@ class MovingMNIST(Dataset):
             num_digits = random.choice(self.num_objects)
             # Generate data on the fly
             images = self.generate_moving_mnist(num_digits, self.background)
+        elif self.is_mv:
+            images = self.dataset[idx]
         else:
             images = self.dataset[:, idx, ...]
 
-        if not self.background:
+        if self.is_mv and self.is_train:
+            images = images.transpose(0, 3, 1, 2)
+        elif not self.background:
             r, w = 1, self.image_size_
             images = images.reshape((length, w, r, w, r)).transpose(
                 0, 2, 4, 1, 3).reshape((length, r * r, w, w))
-        else:
+        elif not self.is_mv:
             images = images.transpose(0, 3, 1, 2)
 
         input = images[:self.n_frames_input]
@@ -220,8 +254,15 @@ class MovingMNIST(Dataset):
         else:
             output = []
 
-        output = torch.from_numpy(output / 255.0).contiguous().float()
-        input = torch.from_numpy(input / 255.0).contiguous().float()
+        if self.is_train:
+            output = torch.from_numpy(output / 255.0).contiguous().float()
+            input = torch.from_numpy(input / 255.0).contiguous().float()
+        elif not self.is_mv:
+            output = torch.from_numpy(output / 255.0).contiguous().float()
+            input = torch.from_numpy(input / 255.0).contiguous().float()
+        else:
+            output = torch.from_numpy(output).contiguous().float()
+            input = torch.from_numpy(input).contiguous().float()
 
         if self.use_augment:
             imgs = self._augment_seq(torch.cat([input, output], dim=0), crop_scale=0.94)
@@ -274,17 +315,25 @@ if __name__ == '__main__':
     
     dataloader_train, _, dataloader_test = \
         load_data(batch_size=16,
-                  val_batch_size=4,
-                  data_root='../../data/',
+                  val_batch_size=16,
+                  data_root='/root/data/lsh/openstl_weather/openstl/data/',
                   num_workers=4,
-                  data_name='mnist',
+                  data_name='mv_mmnist',
                   pre_seq_length=10, aft_seq_length=10,
-                  distributed=True, use_prefetcher=False)
+                  distributed=False, use_prefetcher=False)
 
     print(len(dataloader_train), len(dataloader_test))
+    # data_s = []
     for item in dataloader_train:
         print(item[0].shape, item[1].shape)
         break
+        # mmm = torch.cat((item[0], item[1]), dim=1)
+        # data_s.append(mmm)
+
+    # data_s = torch.cat(data_s,dim=0)
+    # print(data_s.shape)
+    # np.save('/root/data/lsh/openstl_weather/openstl/data/moving_mnist/mnist_fmnist_mv_test_seq.npy',data_s)
+
     for item in dataloader_test:
         print(item[0].shape, item[1].shape)
         break

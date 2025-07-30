@@ -11,30 +11,18 @@
 ## 🆕 Updates
 
 - **[June 26, 2025]** 🎉 Met2Net accepted to **ICCV 2025**! Paper available on arXiv: [2507.17189](https://arxiv.org/pdf/2507.17189)
-<!-- ---
-## 🌐 Overview
+---
+## 📂 Datasets & Models Overview
 
-**Met2Net** is a representation-decoupled spatio-temporal forecasting framework tailored for complex meteorological systems. It introduces a **two-stage pipeline**:
+We release both the processed datasets and pretrained model weights on Hugging Face for full reproducibility:
 
-- **Stage 1:** Learn variable-specific representations using independent encoder-decoder pairs.
-- **Stage 2:** Enable cross-variable translation via a lightweight Transformer-based Translator to model interactions.
+| Dataset Name     | Variables                | Shape (C×H×W) | Seq (Input→Output) | Samples (Train/Test) | Dataset Repo | Model Repo |
+|------------------|--------------------------|----------------|--------------------|-----------------------|--------------|------------|
+| **ERA5-Cropped** | T2M, U10, V10, MSL       | 4×128×128      | 12 → 12            | 43,801 / 8,737        | [📂 HF Dataset](https://huggingface.co/datasets/guaishou1/Met2Net) | [🧠 HF Model](https://huggingface.co/guaishou1/Met2Net) |
+| **MvMm-FNIST**   | 3 synthetic channels     | 3×64×64        | 10 → 10            | 10,000 / 10,000       | [📂 HF Dataset](https://huggingface.co/datasets/guaishou1/Met2Net)     | [🧠 HF Model](https://huggingface.co/guaishou1/Met2Net) |
 
-This approach effectively separates feature learning from interaction modeling, improving both accuracy and generalization. -->
 
 ---
-
-<!-- ## 📊 Benchmarks
-
-Met2Net is evaluated on standard weather forecasting datasets including ERA5 and WeatherBench, covering multi-variable 3D gridded fields over time.
-
-| Dataset      | Variables                  | Resolution    | Horizon        | Download         |
-|--------------|----------------------------|---------------|----------------|------------------|
-| ERA5-Cropped | T2M, UV10, R, TCC          | 128×128       | 24h, 48h, 72h   | [Link](#)        |
-| WeatherBench | T850, Z500, U10, V10       | 5.625°        | 24h – 120h     | [Link](#)        |
-
-> 📌 For detailed training and evaluation settings, please refer to [`configs/`](configs/)
-
---- -->
 
 ## 🚀 Getting Started
 
