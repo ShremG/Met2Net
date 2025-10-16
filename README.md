@@ -46,14 +46,13 @@ bash run.sh
 If you find this project useful in your research, please cite:
 
 ```bibtex
-@inproceedings{li2025met2net,
-  title     = {Met2Net: A Decoupled Two-Stage Spatio-Temporal Forecasting Model for Complex Meteorological Systems},
-  author    = {Shaohan Li and Hao Yang and Min Chen and Xiaolin Qin},
-  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
-  year      = {2025},
-  eprint    = {2507.17189},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.CV}
+@InProceedings{Li_2025_ICCV,
+    author    = {Li, Shaohan and Yang, Hao and Chen, Min and Qin, Xiaolin},
+    title     = {Met2Net: A Decoupled Two-Stage Spatio-Temporal Forecasting Model for Complex Meteorological Systems},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    month     = {October},
+    year      = {2025},
+    pages     = {5458-5468}
 }
 ```
 
