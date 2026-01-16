@@ -1,4 +1,12 @@
 dataset_parameters = {
+    'era5wind': {
+        'in_shape': [12, 4, 128, 128],
+        'pre_seq_length': 12,
+        'aft_seq_length': 12,
+        'total_length': 24,
+        'data_name': 'era5wind',
+        'metrics': ['mse', 'mae', 'rmse','ssim', 'psnr'],
+    },
     'bair': {
         'in_shape': [4, 3, 64, 64],
         'pre_seq_length': 4,
